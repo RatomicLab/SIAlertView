@@ -218,55 +218,54 @@ static SIAlertView *__si_alert_current_view;
     appearance.destructiveButtonAttributes = @{NSFontAttributeName : otherButtonFont, NSForegroundColorAttributeName : [UIColor colorWithRed:0.96f green:0.37f blue:0.31f alpha:1.00f]};
 }
 
+- (id) init
+{
+    self = [super init];
+    if (self) {
+        self.items = [NSMutableArray array];
+        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
+        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
+    }
+    return self;
+}
+
 - (id)initWithTitle:(NSString *)title message:(NSString *)message
 {
-	self = [super init];
+	self = [self init];
 	if (self) {
         self.title = title;
         self.message = message;
-		self.items = [NSMutableArray array];
-        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
-        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
 	}
 	return self;
 }
 
 - (id)initWithTitle:(NSString *)title contentView:(UIView *)contentView
 {
-    self = [super init];
+    self = [self init];
     if (self) {
         _title = title;
         _contentView = contentView;
-        self.items = [NSMutableArray array];
-        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
-        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
     }
     return self;
 }
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message contentView:(UIView *)contentView
 {
-    self = [super init];
+    self = [self init];
     if (self) {
         _title = title;
         _message = message;
         _contentView = contentView;
-        self.items = [NSMutableArray array];
-        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
-        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
     }
     return self;
 }
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message cancelButton:(NSString *)canelButton handler:(SIAlertViewHandler)handler
 {
-    self = [super init];
+    self = [self init];
 	if (self) {
         self.title = title;
         self.message = message;
-		self.items = [NSMutableArray array];
-        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
-        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
         
         if (canelButton) {
             [self addButtonWithTitle:canelButton type:SIAlertViewButtonTypeCancel handler:handler];
@@ -277,13 +276,10 @@ static SIAlertView *__si_alert_current_view;
 
 - (id)initWithAttributedTitle:(NSAttributedString *)attributedTitle attributedMessage:(NSAttributedString *)attributedMessage
 {
-	self = [super init];
+	self = [self init];
 	if (self) {
 		self.attributedTitle = attributedTitle;
         self.attributedMessage = attributedMessage;
-		self.items = [NSMutableArray array];
-        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
-        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
 	}
 	return self;
 }
