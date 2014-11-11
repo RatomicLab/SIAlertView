@@ -197,6 +197,8 @@ static SIAlertView *__si_alert_current_view;
     appearance.cancelButtonBackgroundColor = [UIColor colorWithWhite:0.97 alpha:1];
     appearance.destructiveButtonBackgroundColor = [UIColor colorWithWhite:0.99 alpha:1];
     
+    appearance.contentViewPadding = CONTENT_PADDING_LEFT;
+    
     appearance.buttonCornerRadius = 3.0f;
     appearance.buttonBorderWidth = 1.0f;
     appearance.defaultButtonBorderColor = [UIColor colorWithWhite:0.95 alpha:1];
@@ -225,6 +227,7 @@ static SIAlertView *__si_alert_current_view;
         self.items = [NSMutableArray array];
         self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
         self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
+        self.contentViewPadding = [[[self class] appearance] contentViewPadding];
     }
     return self;
 }
@@ -887,7 +890,7 @@ static SIAlertView *__si_alert_current_view;
         }
         CGFloat height = self.contentView.frame.size.height;
         
-        self.contentView.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
+        self.contentView.frame = CGRectMake(self.contentViewPadding, y, CONTAINER_WIDTH - self.contentViewPadding * 2, height);
         y += height + GAP;
     }
     if(self.inputTextField) {
@@ -1392,6 +1395,16 @@ static SIAlertView *__si_alert_current_view;
         return [[[self class] appearance] cancelButtonBackgroundColor];
     }
     return _cancelButtonBackgroundColor;
+}
+
+- (CGFloat) contentViewPadding
+{
+    if (_contentViewPadding != [[[self class] appearance] contentViewPadding])
+    {
+        return _contentViewPadding;
+    }
+    
+    return [[[self class] appearance] contentViewPadding];
 }
 
 - (UIColor *)destructiveButtonBackgroundColor

@@ -94,6 +94,8 @@ typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 @property (nonatomic, strong) UIColor *cancelButtonBackgroundColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
 @property (nonatomic, strong) UIColor *destructiveButtonBackgroundColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
 
+@property (nonatomic, assign) CGFloat contentViewPadding NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR; // default is 10.0
+
 // Properties only for buttonsStyle == SIAlertViewButtonsStyleRounded
 @property (nonatomic, assign) CGFloat buttonCornerRadius NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR; // default is 3.0
 @property (nonatomic, assign) CGFloat buttonBorderWidth NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR; // default is 1.0
