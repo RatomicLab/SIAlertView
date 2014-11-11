@@ -928,11 +928,25 @@ static SIAlertView *__si_alert_current_view;
                 y += BUTTON_HEIGHT;
             }
         } else {
-            for (NSUInteger i = 0; i < self.buttons.count; i++) {
-                UIButton *button = self.buttons[i];
-                button.frame = CGRectMake(0, y, CONTAINER_WIDTH, BUTTON_HEIGHT);
-                CGPathAddRect(path, NULL, CGRectMake(0, y, CONTAINER_WIDTH, lineWidth));
-                y += BUTTON_HEIGHT;
+            
+            if (self.buttonsStyle == SIAlertViewButtonsStyleRounded)
+            {
+                for (NSUInteger i = 0; i < self.buttons.count; i++) {
+                    CGFloat width = CONTAINER_WIDTH - (CONTENT_PADDING_LEFT * 2.0);
+                    CGFloat height = BUTTON_HEIGHT - 10.0f;
+                    UIButton *button = self.buttons[i];
+                    button.frame = CGRectMake(0 + CONTENT_PADDING_LEFT, y + 5.0f, width, height);
+                    y += BUTTON_HEIGHT;
+                }
+            }
+            else
+            {
+                for (NSUInteger i = 0; i < self.buttons.count; i++) {
+                    UIButton *button = self.buttons[i];
+                    button.frame = CGRectMake(0, y, CONTAINER_WIDTH, BUTTON_HEIGHT);
+                    CGPathAddRect(path, NULL, CGRectMake(0, y, CONTAINER_WIDTH, lineWidth));
+                    y += BUTTON_HEIGHT;
+                }
             }
         }
         self.lineLayer.path = path;
