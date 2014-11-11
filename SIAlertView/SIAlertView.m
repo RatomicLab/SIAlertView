@@ -197,6 +197,12 @@ static SIAlertView *__si_alert_current_view;
     appearance.cancelButtonBackgroundColor = [UIColor colorWithWhite:0.97 alpha:1];
     appearance.destructiveButtonBackgroundColor = [UIColor colorWithWhite:0.99 alpha:1];
     
+    appearance.buttonCornerRadius = 3.0f;
+    appearance.buttonBorderWidth = 1.0f;
+    appearance.defaultButtonBorderColor = [UIColor colorWithWhite:0.95 alpha:1];
+    appearance.cancelButtonBorderColor = [UIColor colorWithWhite:0.95 alpha:1];
+    appearance.destructiveButtonBorderColor = [UIColor colorWithWhite:0.95 alpha:1];
+    
     UIFont *titleFont = [UIFont boldSystemFontOfSize:[UIFont labelFontSize]];
     UIFont *messageFont = [UIFont systemFontOfSize:[UIFont systemFontSize]];
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
@@ -218,8 +224,9 @@ static SIAlertView *__si_alert_current_view;
 	if (self) {
         self.title = title;
         self.message = message;
-        
 		self.items = [NSMutableArray array];
+        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
+        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
 	}
 	return self;
 }
@@ -229,7 +236,9 @@ static SIAlertView *__si_alert_current_view;
     if (self) {
         _title = title;
         _customView = customView;
-        self.items = [[NSMutableArray alloc] init];
+        self.items = [NSMutableArray array];
+        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
+        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
     }
     return self;
 }
@@ -240,8 +249,9 @@ static SIAlertView *__si_alert_current_view;
 	if (self) {
         self.title = title;
         self.message = message;
-        
 		self.items = [NSMutableArray array];
+        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
+        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
         
         if (canelButton) {
             [self addButtonWithTitle:canelButton type:SIAlertViewButtonTypeCancel handler:handler];
@@ -256,8 +266,9 @@ static SIAlertView *__si_alert_current_view;
 	if (self) {
 		self.attributedTitle = attributedTitle;
         self.attributedMessage = attributedMessage;
-        
 		self.items = [NSMutableArray array];
+        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
+        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
 	}
 	return self;
 }
@@ -868,14 +879,27 @@ static SIAlertView *__si_alert_current_view;
         
         CGFloat y = 0;
         if (self.items.count == 2 && self.buttonsListStyle == SIAlertViewButtonsListStyleNormal) {
-            CGFloat width = CONTAINER_WIDTH * 0.5;
-            UIButton *button = self.buttons[0];
-            button.frame = CGRectMake(0, y, width, BUTTON_HEIGHT);
-            button = self.buttons[1];
-            button.frame = CGRectMake(0 + width, y, width, BUTTON_HEIGHT);
-            CGPathAddRect(path, NULL, CGRectMake(0, y, CONTAINER_WIDTH, lineWidth));
-            CGPathAddRect(path, NULL, CGRectMake(width, y, lineWidth, BUTTON_HEIGHT));
-            y += BUTTON_HEIGHT;
+            if (self.buttonsStyle == SIAlertViewButtonsStyleRounded)
+            {
+                CGFloat width = (CONTAINER_WIDTH - (CONTENT_PADDING_LEFT * 2.0) - 10.0f) * 0.5f;
+                CGFloat height = BUTTON_HEIGHT - 10.0f;
+                UIButton *button = self.buttons[0];
+                button.frame = CGRectMake(0 + CONTENT_PADDING_LEFT, y + 5.0f, width, height);
+                button = self.buttons[1];
+                button.frame = CGRectMake(CONTENT_PADDING_LEFT + width + 10.0f, y + 5.0f, width, height);
+                y += BUTTON_HEIGHT;
+            }
+            else
+            {
+                CGFloat width = CONTAINER_WIDTH * 0.5;
+                UIButton *button = self.buttons[0];
+                button.frame = CGRectMake(0, y, width, BUTTON_HEIGHT);
+                button = self.buttons[1];
+                button.frame = CGRectMake(0 + width, y, width, BUTTON_HEIGHT);
+                CGPathAddRect(path, NULL, CGRectMake(0, y, CONTAINER_WIDTH, lineWidth));
+                CGPathAddRect(path, NULL, CGRectMake(width, y, lineWidth, BUTTON_HEIGHT));
+                y += BUTTON_HEIGHT;
+            }
         } else {
             for (NSUInteger i = 0; i < self.buttons.count; i++) {
                 UIButton *button = self.buttons[i];
@@ -1074,12 +1098,14 @@ static SIAlertView *__si_alert_current_view;
     NSDictionary *defaults = nil;
 	UIImage *normalImage = nil;
 	UIImage *highlightedImage = nil;
+    UIColor *borderColor = nil;
 	switch (item.type) {
 		case SIAlertViewButtonTypeCancel:
             if (self.cancelButtonBackgroundColor) {
                 normalImage = [self imageWithUIColor:self.cancelButtonBackgroundColor];
                 highlightedImage = [self imageWithUIColor:[self highlightedColorWithColor:self.cancelButtonBackgroundColor]];
                 defaults = self.cancelButtonAttributes;
+                borderColor = self.cancelButtonBorderColor;
             }
 			break;
 		case SIAlertViewButtonTypeDestructive:
@@ -1087,6 +1113,7 @@ static SIAlertView *__si_alert_current_view;
                 normalImage = [self imageWithUIColor:self.destructiveButtonBackgroundColor];
                 highlightedImage = [self imageWithUIColor:[self highlightedColorWithColor:self.destructiveButtonBackgroundColor]];
                 defaults = self.destructiveButtonAttributes;
+                borderColor = self.destructiveButtonBorderColor;
             }
 			break;
 		case SIAlertViewButtonTypeDefault:
@@ -1095,12 +1122,25 @@ static SIAlertView *__si_alert_current_view;
                 normalImage = [self imageWithUIColor:self.defaultButtonBackgroundColor];
                 highlightedImage = [self imageWithUIColor:[self highlightedColorWithColor:self.defaultButtonBackgroundColor]];
                 defaults = self.defaultButtonAttributes;
+                borderColor = self.defaultButtonBorderColor;
             }
 			break;
 	}
 	[button setBackgroundImage:normalImage forState:UIControlStateNormal];
 	[button setBackgroundImage:highlightedImage forState:UIControlStateHighlighted];
 	[button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    if (self.buttonsStyle == SIAlertViewButtonsStyleRounded)
+    {
+        button.layer.masksToBounds = true;
+        button.layer.cornerRadius = self.buttonCornerRadius;
+        
+        if (borderColor)
+        {
+            button.layer.borderColor = [borderColor CGColor];
+            button.layer.borderWidth = self.buttonBorderWidth;
+        }
+    }
     
     NSAttributedString *title = item.attributedTitle ? item.attributedTitle : [[NSAttributedString alloc] initWithString:item.title attributes:[self tintedAttributes:defaults]];
     [button setAttributedTitle:title forState:UIControlStateNormal];
@@ -1223,8 +1263,6 @@ static SIAlertView *__si_alert_current_view;
     self.containerView.layer.shadowOpacity = shadowRadius > 0 ? 0.5 : 0;
 }
 
-
-
 - (UIColor *)defaultButtonBackgroundColor
 {
     if (!_defaultButtonBackgroundColor) {
@@ -1247,6 +1285,50 @@ static SIAlertView *__si_alert_current_view;
         return [[[self class] appearance] destructiveButtonBackgroundColor];
     }
     return _destructiveButtonBackgroundColor;
+}
+
+- (CGFloat) buttonCornerRadius
+{
+    if (_buttonCornerRadius != [[[self class] appearance] buttonCornerRadius])
+    {
+        return _buttonCornerRadius;
+    }
+    
+    return [[[self class] appearance] buttonCornerRadius];
+}
+
+- (CGFloat) buttonBorderWidth
+{
+    if (_buttonBorderWidth != [[[self class] appearance] buttonBorderWidth])
+    {
+        return _buttonBorderWidth;
+    }
+    
+    return [[[self class] appearance] buttonBorderWidth];
+}
+
+- (UIColor *)defaultButtonBorderColor
+{
+    if (!_defaultButtonBorderColor) {
+        return [[[self class] appearance] defaultButtonBorderColor];
+    }
+    return _defaultButtonBorderColor;
+}
+
+- (UIColor *)cancelButtonBorderColor
+{
+    if (!_cancelButtonBorderColor) {
+        return [[[self class] appearance] cancelButtonBorderColor];
+    }
+    return _cancelButtonBorderColor;
+}
+
+- (UIColor *)destructiveButtonBorderColor
+{
+    if (!_destructiveButtonBorderColor) {
+        return [[[self class] appearance] destructiveButtonBorderColor];
+    }
+    return _destructiveButtonBorderColor;
 }
 
 - (NSDictionary *)titleAttributes

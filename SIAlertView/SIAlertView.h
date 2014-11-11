@@ -26,7 +26,12 @@ typedef NS_ENUM(NSInteger, SIAlertViewBackgroundStyle) {
 
 typedef NS_ENUM(NSInteger, SIAlertViewButtonsListStyle) {
     SIAlertViewButtonsListStyleNormal = 0,
-    SIAlertViewButtonsListStyleRows
+    SIAlertViewButtonsListStyleRows,
+};
+
+typedef NS_ENUM(NSInteger, SIAlertViewButtonsStyle) {
+    SIAlertViewButtonsStyleRounded = 0,
+    SIAlertViewButtonsStyleNormal,
 };
 
 typedef NS_ENUM(NSInteger, SIAlertViewTransitionStyle) {
@@ -48,10 +53,10 @@ typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 @property (nonatomic, copy) NSAttributedString *attributedTitle;
 @property (nonatomic, copy) NSAttributedString *attributedMessage;
 
-@property (nonatomic, assign) SIAlertViewTransitionStyle transitionStyle; // default is SIAlertViewTransitionStyleSlideFromBottom
-@property (nonatomic, assign) SIAlertViewBackgroundStyle backgroundStyle; // default is SIAlertViewButtonTypeSolid
 @property (nonatomic, assign) SIAlertViewTransitionStyle transitionStyle; // default is SIAlertViewTransitionStyleBounce
+@property (nonatomic, assign) SIAlertViewBackgroundStyle backgroundStyle; // default is SIAlertViewBackgroundStyleSolid
 @property (nonatomic, assign) SIAlertViewButtonsListStyle buttonsListStyle; // default is SIAlertViewButtonsListStyleNormal
+@property (nonatomic, assign) SIAlertViewButtonsStyle buttonsStyle; // default is SIAlertViewButtonsStyleRounded
 
 @property (nonatomic, copy) SIAlertViewHandler willShowHandler;
 @property (nonatomic, copy) SIAlertViewHandler didShowHandler;
@@ -80,6 +85,12 @@ typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 @property (nonatomic, strong) UIColor *cancelButtonBackgroundColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
 @property (nonatomic, strong) UIColor *destructiveButtonBackgroundColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
 
+// Properties only for buttonsStyle == SIAlertViewButtonsStyleRounded
+@property (nonatomic, assign) CGFloat buttonCornerRadius NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR; // default is 3.0
+@property (nonatomic, assign) CGFloat buttonBorderWidth NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR; // default is 1.0
+@property (nonatomic, strong) UIColor *defaultButtonBorderColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
+@property (nonatomic, strong) UIColor *cancelButtonBorderColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
+@property (nonatomic, strong) UIColor *destructiveButtonBorderColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message;
 - (id)initWithTitle:(NSString *)title andCustomView:(UIView *)customView;
