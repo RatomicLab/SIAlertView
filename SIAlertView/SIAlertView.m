@@ -40,13 +40,11 @@ static SIAlertView *__si_alert_current_view;
 @property (nonatomic, assign, getter = isVisible) BOOL visible;
 
 @property (nonatomic, strong) UILabel *titleLabel;
-@property (nonatomic, strong) UIView *customView;
 @property (nonatomic, strong) UILabel *messageLabel;
 @property (nonatomic, strong) UIView *containerView;
 @property (nonatomic, strong) UIView *wrapperView;
 @property (nonatomic, strong) UIScrollView *contentContainerView;
 @property (nonatomic, strong) UIView *buttonContainerView;
-@property (nonatomic, strong) UIView *contentView;
 @property (nonatomic, strong) CAShapeLayer *lineLayer;
 @property (nonatomic, strong) NSMutableArray *buttons;
 
@@ -231,11 +229,26 @@ static SIAlertView *__si_alert_current_view;
 	return self;
 }
 
-- (id)initWithTitle:(NSString *)title andCustomView:(UIView *)customView{
+- (id)initWithTitle:(NSString *)title contentView:(UIView *)contentView
+{
     self = [super init];
     if (self) {
         _title = title;
-        _customView = customView;
+        _contentView = contentView;
+        self.items = [NSMutableArray array];
+        self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
+        self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
+    }
+    return self;
+}
+
+- (id)initWithTitle:(NSString *)title message:(NSString *)message contentView:(UIView *)contentView
+{
+    self = [super init];
+    if (self) {
+        _title = title;
+        _message = message;
+        _contentView = contentView;
         self.items = [NSMutableArray array];
         self.buttonBorderWidth = [[[self class] appearance] buttonBorderWidth];
         self.buttonCornerRadius = [[[self class] appearance] buttonCornerRadius];
@@ -853,15 +866,6 @@ static SIAlertView *__si_alert_current_view;
         self.titleLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
         y += height;
 	}
-    if (self.customView) {
-        if (y > CONTENT_PADDING_TOP) {
-            y += GAP;
-        }
-        CGFloat height = self.customView.frame.size.height;
-        
-        self.customView.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
-        y += height + GAP;
-    }
     if (self.messageLabel) {
         if (y > CONTENT_PADDING_TOP) {
             y += GAP;
@@ -869,6 +873,15 @@ static SIAlertView *__si_alert_current_view;
         self.messageLabel.attributedText = self.attributedMessage;
         CGFloat height = [self heightForMessageLabel];
         self.messageLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
+        y += height + GAP;
+    }
+    if (self.contentView) {
+        if (y > CONTENT_PADDING_TOP) {
+            y += GAP;
+        }
+        CGFloat height = self.contentView.frame.size.height;
+        
+        self.contentView.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
         y += height + GAP;
     }
     contentContainerViewHeight = y;
@@ -980,8 +993,8 @@ static SIAlertView *__si_alert_current_view;
     self.titleLabel = nil;
     self.messageLabel = nil;
     
-    [self.customView removeFromSuperview];
-    self.customView = nil;
+    [self.contentView removeFromSuperview];
+    self.contentView = nil;
     
     [self.buttons removeAllObjects];
     [self.alertWindow removeFromSuperview];
@@ -1043,11 +1056,11 @@ static SIAlertView *__si_alert_current_view;
     [self invalidateLayout];
 }
 - (void)setupCustomView{
-    if (self.customView) {
+    if (self.contentView) {
         
         //self.customView.frame = self.bounds;
         
-        [self.contentContainerView addSubview:self.customView];
+        [self.contentContainerView addSubview:self.contentView];
 #if DEBUG_LAYOUT
         self.customView.backgroundColor = [UIColor redColor];
 #endif
@@ -1057,9 +1070,6 @@ static SIAlertView *__si_alert_current_view;
 
 - (void)updateMessageLabel
 {
-    if (self.customView) {
-        return;
-    }
     if (self.message) {
         if (!self.messageLabel) {
             self.messageLabel = [[UILabel alloc] initWithFrame:self.bounds];

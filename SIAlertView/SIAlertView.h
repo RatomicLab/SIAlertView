@@ -49,6 +49,7 @@ typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 
 @property (nonatomic, copy) NSString *title;
 @property (nonatomic, copy) NSString *message;
+@property (nonatomic, strong) UIView *contentView;
 
 @property (nonatomic, copy) NSAttributedString *attributedTitle;
 @property (nonatomic, copy) NSAttributedString *attributedMessage;
@@ -93,10 +94,11 @@ typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 @property (nonatomic, strong) UIColor *destructiveButtonBorderColor NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message;
-- (id)initWithTitle:(NSString *)title andCustomView:(UIView *)customView;
-
+- (id)initWithTitle:(NSString *)title contentView:(UIView *)contentView;
+- (id)initWithTitle:(NSString *)title message:(NSString *)message contentView:(UIView *)contentView;
 - (id)initWithTitle:(NSString *)title message:(NSString *)message cancelButton:(NSString *)canelButton handler:(SIAlertViewHandler)handler;
 - (id)initWithAttributedTitle:(NSAttributedString *)attributedTitle attributedMessage:(NSAttributedString *)attributedMessage;
+
 - (void)addButtonWithTitle:(NSString *)title type:(SIAlertViewButtonType)type handler:(SIAlertViewHandler)handler;
 - (void)addButtonWithTitle:(NSString *)title font:(UIFont *)font color:(UIColor *)color type:(SIAlertViewButtonType)type handler:(SIAlertViewHandler)handler;
 - (void)addButtonWithAttributedTitle:(NSAttributedString *)attributedTitle type:(SIAlertViewButtonType)type handler:(SIAlertViewHandler)handler;
