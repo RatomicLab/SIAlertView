@@ -184,10 +184,7 @@ static SIAlertView *__si_alert_current_view;
 @synthesize attributedTitle = _attributedTitle, attributedMessage = _attributedMessage;
 
 + (void)initialize
-{
-    if (self != [SIAlertView class])
-        return;
-    
+{    
     SIAlertView *appearance = [self appearance];
     appearance.viewBackgroundColor = [UIColor whiteColor];
     appearance.seperatorColor = [UIColor colorWithWhite:0 alpha:0.1];
