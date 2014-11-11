@@ -21,6 +21,7 @@ NSString *const SIAlertViewDidDismissNotification = @"SIAlertViewDidDismissNotif
 #define CONTENT_PADDING_LEFT 10
 #define CONTENT_PADDING_TOP 20
 #define BUTTON_HEIGHT 50
+#define INPUT_TEXT_HEIGHT 32
 #define CONTAINER_WIDTH 270
 
 const UIWindowLevel UIWindowLevelSIAlert = 1996.0;  // don't overlap system's alert
@@ -33,7 +34,7 @@ static BOOL __si_alert_animating;
 static SIAlertBackgroundWindow *__si_alert_background_window;
 static SIAlertView *__si_alert_current_view;
 
-@interface SIAlertView ()
+@interface SIAlertView () <UITextFieldDelegate>
 
 @property (nonatomic, strong) NSMutableArray *items;
 @property (nonatomic, strong) UIWindow *alertWindow;
@@ -41,6 +42,7 @@ static SIAlertView *__si_alert_current_view;
 
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *messageLabel;
+@property (nonatomic, strong) UITextField *inputTextField;
 @property (nonatomic, strong) UIView *containerView;
 @property (nonatomic, strong) UIView *wrapperView;
 @property (nonatomic, strong) UIScrollView *contentContainerView;
@@ -286,21 +288,6 @@ static SIAlertView *__si_alert_current_view;
 	return self;
 }
 
-#pragma mark - Notification handle methods
-
-- (void)keyboardDidShow:(NSNotification *)notif{
-    NSDictionary* info = [notif userInfo];
-    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGSize keyboardSize = [aValue CGRectValue].size;
-    CGRect frame = self.containerView.frame;
-    CGFloat y = (self.frame.size.height-keyboardSize.height- self.containerView.frame.size.height)/2;
-    frame.origin.y = MAX(y,0);
-    [UIView animateWithDuration:0.25 animations:^{
-        self.containerView.frame = frame;
-    }];
-    
-}
-
 #pragma mark - Class methods
 
 + (NSMutableArray *)sharedQueue
@@ -415,6 +402,16 @@ static SIAlertView *__si_alert_current_view;
         return _attributedMessage.string;
     }
     return _message;
+}
+
+- (void) setAlertViewStyle:(SIAlertViewStyle)alertViewStyle
+{
+    _alertViewStyle = alertViewStyle;
+    
+    if (alertViewStyle == SIAlertViewStyleTextInput)
+    {
+        self.inputTextField = [[UITextField alloc] init];
+    }
 }
 
 - (void)setAttributedTitle:(NSAttributedString *)attributedTitle
@@ -571,6 +568,11 @@ static SIAlertView *__si_alert_current_view;
         
         [SIAlertView setAnimating:NO];
         
+        if (self.inputTextField)
+        {
+            [self.inputTextField becomeFirstResponder];
+        }
+        
         NSInteger index = [[SIAlertView sharedQueue] indexOfObject:self];
         if (index < [SIAlertView sharedQueue].count - 1) {
             [self dismissAnimated:YES cleanup:NO]; // dismiss to show next alert view
@@ -638,6 +640,14 @@ static SIAlertView *__si_alert_current_view;
             }
         }
     };
+    
+    if (self.inputTextField && self.inputTextField.isFirstResponder)
+    {
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:NULL];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:NULL];
+        
+        [self.inputTextField resignFirstResponder];
+    }
     
     if (animated && isVisible) {
         [SIAlertView setAnimating:YES];
@@ -884,6 +894,14 @@ static SIAlertView *__si_alert_current_view;
         self.contentView.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
         y += height + GAP;
     }
+    if(self.inputTextField) {
+        if (y > CONTENT_PADDING_TOP) {
+            y += GAP;
+        }
+        CGFloat height = self.inputTextField.frame.size.height == 0.0 ? INPUT_TEXT_HEIGHT : self.inputTextField.frame.size.height;
+        self.inputTextField.frame = CGRectMake(CONTENT_PADDING_LEFT, y, CONTAINER_WIDTH - CONTENT_PADDING_LEFT * 2, height);
+        y += height;
+    }
     contentContainerViewHeight = y;
     
     if (self.items.count > 0) {
@@ -976,10 +994,10 @@ static SIAlertView *__si_alert_current_view;
 
 - (void)setup
 {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
     [self setupViewHierarchy];
     [self updateTitleLabel];
     [self setupCustomView];
+    [self setupInputTextField];
     [self updateMessageLabel];
     [self setupButtons];
     [self setupLineLayer];
@@ -1066,6 +1084,23 @@ static SIAlertView *__si_alert_current_view;
 #endif
     }
     [self invalidateLayout];
+}
+
+- (void)setupInputTextField
+{
+    if (self.alertViewStyle == SIAlertViewStyleTextInput)
+    {
+        self.inputTextField.delegate = self;
+        [self.containerView addSubview:self.inputTextField];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+        
+#if DEBUG_LAYOUT
+        self.textField.backgroundColor = [UIColor redColor];
+#endif
+        [self invalidateLayout];
+    }
 }
 
 - (void)updateMessageLabel
@@ -1232,6 +1267,66 @@ static SIAlertView *__si_alert_current_view;
         attributes = [temp copy];
     }
     return attributes;
+}
+
+#pragma mark - UITextField delegate
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    
+    bool buttonAction = false;
+    if ([self.items count] == 1)
+    {
+        [self buttonAction:self.buttons[0]];
+        buttonAction = true;
+    }
+    
+    if (!buttonAction)
+    {
+        for (NSUInteger i = 0; i < self.buttons.count; i++)
+        {
+            if (((SIAlertItem *)self.items[i]).type == SIAlertViewButtonTypeDefault)
+            {
+                [self buttonAction:self.buttons[i]];
+                buttonAction = true;
+            }
+        }
+    }
+    
+    return YES;
+}
+
+#pragma mark - Keyboard actions
+
+- (void)keyboardWillShow:(NSNotification*) notification
+{
+    NSDictionary* info = [notification userInfo];
+    
+    CGRect kbFrame = [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    kbFrame = [[self.containerView superview] convertRect:kbFrame fromView:nil];
+    CGSize kbSize = kbFrame.size;
+    
+    CGFloat height = self.containerView.frame.size.height;
+    CGFloat top = (self.bounds.size.height - kbSize.height - height) * 0.5;
+    top = MAX(top, 0.0f);
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        CGRect frame = self.containerView.frame;
+        frame.origin.y = top;
+        self.containerView.frame = frame;
+    }];
+}
+
+- (void)keyboardWillHide:(NSNotification*) notification
+{
+    CGFloat height = self.containerView.frame.size.height;
+    CGFloat top = (self.bounds.size.height - height) * 0.5;
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        CGRect frame = self.containerView.frame;
+        frame.origin.y = top;
+        self.containerView.frame = frame;
+    }];
 }
 
 #pragma mark - UIAppearance setters

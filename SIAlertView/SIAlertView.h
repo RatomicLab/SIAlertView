@@ -42,6 +42,11 @@ typedef NS_ENUM(NSInteger, SIAlertViewTransitionStyle) {
     SIAlertViewTransitionStyleDropDown
 };
 
+typedef NS_ENUM(NSInteger, SIAlertViewStyle) {
+    SIAlertViewStyleNormal = 0,
+    SIAlertViewStyleTextInput,
+};
+
 @class SIAlertView;
 typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 
@@ -54,6 +59,9 @@ typedef void(^SIAlertViewHandler)(SIAlertView *alertView);
 @property (nonatomic, copy) NSAttributedString *attributedTitle;
 @property (nonatomic, copy) NSAttributedString *attributedMessage;
 
+@property (nonatomic, readonly) UITextField* inputTextField; // Only valid if alertViewStyle == SIAlertViewStyleTextInput
+
+@property (nonatomic, assign) SIAlertViewStyle alertViewStyle; // default is SIAlertViewStyleNormal
 @property (nonatomic, assign) SIAlertViewTransitionStyle transitionStyle; // default is SIAlertViewTransitionStyleBounce
 @property (nonatomic, assign) SIAlertViewBackgroundStyle backgroundStyle; // default is SIAlertViewBackgroundStyleSolid
 @property (nonatomic, assign) SIAlertViewButtonsListStyle buttonsListStyle; // default is SIAlertViewButtonsListStyleNormal
