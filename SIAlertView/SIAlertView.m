@@ -334,13 +334,11 @@ static SIAlertView *__si_alert_current_view;
 + (void)hideBackgroundAnimated:(BOOL)animated
 {
     void (^completion)(void) = ^{
-        [__si_alert_background_window removeFromSuperview];
-        __si_alert_background_window = nil;
-        
         UIWindow *mainWindow = [UIApplication sharedApplication].windows[0];
         mainWindow.tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
         [mainWindow makeKeyWindow];
-        mainWindow.hidden = NO;
+        __si_alert_background_window.hidden = YES;
+        __si_alert_background_window = nil;
     };
     
     if (!animated) {
@@ -596,8 +594,6 @@ static SIAlertView *__si_alert_current_view;
     }
     
     void (^dismissComplete)(void) = ^{
-        self.visible = NO;
-        
         [self teardown];
         
         [SIAlertView setCurrentAlertView:nil];
@@ -1025,7 +1021,7 @@ static SIAlertView *__si_alert_current_view;
     self.contentView = nil;
     
     [self.buttons removeAllObjects];
-    [self.alertWindow removeFromSuperview];
+    self.alertWindow.hidden = YES;
     self.alertWindow = nil;
     self.layoutDirty = NO;
 }
